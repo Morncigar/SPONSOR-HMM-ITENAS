@@ -1,15 +1,11 @@
 /* ============================================================
    HMM ITENAS PARTNERSHIP COMMAND CENTER
-   APP.JS — SUPABASE FINAL V1
+   APP.JS — FINAL V1
    ============================================================ */
 
 
 /* ============================================================
    1. SUPABASE CONFIG
-   ============================================================
-
-   Publishable key aman digunakan di browser.
-   JANGAN pernah pakai secret/service_role key di frontend.
 ============================================================ */
 
 const SUPABASE_URL =
@@ -25,7 +21,7 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 if (!window.supabase) {
   throw new Error(
-    "Supabase JS gagal dimuat. Pastikan CDN Supabase ada di index.html."
+    "Supabase JS gagal dimuat. Pastikan CDN @supabase/supabase-js@2 ada di index.html."
   );
 }
 
@@ -78,7 +74,10 @@ const state = {
 
   partnershipValues: null,
 
-  currentPage: "overview"
+  currentPage: "overview",
+
+  appBootstrapped: false,
+  loadingProfile: false
 };
 
 
@@ -97,13 +96,19 @@ const $$ = (selector) =>
 
 function show(element) {
   if (!element) return;
-  element.classList.remove("hidden");
+
+  element.classList.remove(
+    "hidden"
+  );
 }
 
 
 function hide(element) {
   if (!element) return;
-  element.classList.add("hidden");
+
+  element.classList.add(
+    "hidden"
+  );
 }
 
 
@@ -117,25 +122,10 @@ function escapeHTML(value = "") {
 }
 
 
-function safe(
-  value,
-  fallback = "-"
-) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return fallback;
-  }
-
-  return value;
-}
-
-
 function nullableText(value) {
   const text =
-    String(value || "").trim();
+    String(value || "")
+      .trim();
 
   return text || null;
 }
@@ -175,7 +165,9 @@ function nullableDate(value) {
 
 
 function toISODateTime(value) {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
 
   const date =
     new Date(value);
@@ -323,40 +315,59 @@ function humanizeError(error) {
     error?.message ||
     "Terjadi kesalahan.";
 
+  const lower =
+    message.toLowerCase();
+
   if (
-    message
-      .toLowerCase()
-      .includes(
-        "permission denied"
-      )
+    lower.includes(
+      "permission denied"
+    )
   ) {
     return (
-      "Database menolak akses. " +
-      "Kemungkinan grants/RLS perlu dicek."
+      "Database menolak akses. Cek grants atau RLS."
     );
   }
 
   if (
-    message
-      .toLowerCase()
-      .includes(
-        "row-level security"
-      )
+    lower.includes(
+      "row-level security"
+    )
   ) {
     return (
-      "Akses data ditolak oleh RLS."
+      "Akses ditolak oleh Row Level Security."
     );
   }
 
   if (
-    message
-      .toLowerCase()
-      .includes(
-        "duplicate"
-      )
+    lower.includes(
+      "duplicate"
+    ) ||
+    lower.includes(
+      "unique constraint"
+    )
   ) {
     return (
       "Data serupa sudah ada."
+    );
+  }
+
+  if (
+    lower.includes(
+      "invalid login credentials"
+    )
+  ) {
+    return (
+      "Email atau password salah."
+    );
+  }
+
+  if (
+    lower.includes(
+      "email not confirmed"
+    )
+  ) {
+    return (
+      "Email belum diverifikasi. Cek inbox email kamu."
     );
   }
 
@@ -429,7 +440,9 @@ function setFormMessage(
   message = "",
   type = ""
 ) {
-  if (!element) return;
+  if (!element) {
+    return;
+  }
 
   element.textContent =
     message;
@@ -444,7 +457,9 @@ function setButtonLoading(
   loading,
   loadingText = "Loading..."
 ) {
-  if (!button) return;
+  if (!button) {
+    return;
+  }
 
   if (loading) {
     button.dataset.originalText =
@@ -493,11 +508,12 @@ function closeModal(id) {
 
 
 function closeAllModals() {
-  $$(".modal-overlay").forEach(
-    (modal) => {
-      hide(modal);
-    }
-  );
+  $$(".modal-overlay")
+    .forEach(
+      (modal) => {
+        hide(modal);
+      }
+    );
 }
 
 
@@ -507,6 +523,7 @@ function closeAllModals() {
 
 function showLoading() {
   show($("#appLoading"));
+
   hide($("#authScreen"));
   hide($("#appShell"));
 }
@@ -515,6 +532,7 @@ function showLoading() {
 function showAuth() {
   hide($("#appLoading"));
   hide($("#appShell"));
+
   show($("#authScreen"));
 }
 
@@ -522,45 +540,27 @@ function showAuth() {
 function showApp() {
   hide($("#appLoading"));
   hide($("#authScreen"));
+
   show($("#appShell"));
 }
 
 
 function showLoginForm() {
   show($("#loginForm"));
+
   hide($("#registerForm"));
 }
 
 
 function showRegisterForm() {
   hide($("#loginForm"));
+
   show($("#registerForm"));
 }
 
 
 /* ============================================================
    10. REGISTER
-   ============================================================
-
-   CONFIG SUPABASE LU:
-
-   Email signup      = ON
-   Confirm email     = ON
-   Anonymous         = OFF
-
-   FLOW:
-
-   Register
-      ↓
-   confirmation email
-      ↓
-   user click email
-      ↓
-   session created
-      ↓
-   profile still pending
-      ↓
-   admin activates
 ============================================================ */
 
 async function registerUser(
@@ -595,9 +595,8 @@ async function registerUser(
       .value;
 
   const confirmPassword =
-    $(
-      "#registerPasswordConfirm"
-    ).value;
+    $("#registerPasswordConfirm")
+      .value;
 
 
   setFormMessage(
@@ -677,15 +676,6 @@ async function registerUser(
     }
 
 
-    /*
-      Confirm email = ON
-
-      Normal case:
-      data.user    exists
-      data.session = null
-    */
-
-
     form.reset();
 
     showLoginForm();
@@ -693,17 +683,14 @@ async function registerUser(
 
     setFormMessage(
       $("#loginMessage"),
-      "Account berhasil dibuat. Cek email untuk verifikasi terlebih dahulu. Setelah email terverifikasi, akun masih menunggu aktivasi admin.",
+      "Account berhasil dibuat. Cek email untuk verifikasi. Setelah email terverifikasi, akun tetap menunggu aktivasi admin.",
       "success"
     );
 
 
-    if (data.session) {
-      /*
-        Fallback jika configuration
-        suatu saat Confirm Email dimatikan.
-      */
-
+    if (
+      data.session
+    ) {
       await supabase
         .auth
         .signOut();
@@ -834,14 +821,20 @@ async function logoutUser() {
 
 
 /* ============================================================
-   13. LOAD CURRENT PROFILE
+   13. CURRENT PROFILE
 ============================================================ */
 
 async function loadCurrentProfile() {
-  if (!state.user) {
-    showAuth();
+  if (
+    !state.user ||
+    state.loadingProfile
+  ) {
     return;
   }
+
+
+  state.loadingProfile =
+    true;
 
 
   try {
@@ -868,13 +861,6 @@ async function loadCurrentProfile() {
       data;
 
 
-    /*
-      Profile trigger:
-      role = sponsor_staff
-      status = pending
-    */
-
-
     if (
       data.status ===
       "pending"
@@ -891,7 +877,7 @@ async function loadCurrentProfile() {
 
       setFormMessage(
         $("#loginMessage"),
-        "Email sudah terverifikasi, tapi akun kamu masih menunggu aktivasi admin.",
+        "Email sudah terverifikasi, tapi akun masih menunggu aktivasi admin.",
         "error"
       );
 
@@ -915,7 +901,7 @@ async function loadCurrentProfile() {
 
       setFormMessage(
         $("#loginMessage"),
-        "Akun kamu sedang dinonaktifkan.",
+        "Akun sedang dinonaktifkan.",
         "error"
       );
 
@@ -943,7 +929,12 @@ async function loadCurrentProfile() {
 
     showApp();
 
-    await bootstrapApp();
+
+    if (
+      !state.appBootstrapped
+    ) {
+      await bootstrapApp();
+    }
 
   } catch (error) {
     console.error(error);
@@ -963,6 +954,10 @@ async function loadCurrentProfile() {
       "Profile account gagal dimuat.",
       "error"
     );
+
+  } finally {
+    state.loadingProfile =
+      false;
   }
 }
 
@@ -1056,6 +1051,12 @@ function resetState() {
 
   state.currentPage =
     "overview";
+
+  state.appBootstrapped =
+    false;
+
+  state.loadingProfile =
+    false;
 }
 
 
@@ -1088,6 +1089,10 @@ async function bootstrapApp() {
 
 
     await loadCampaignData();
+
+
+    state.appBootstrapped =
+      true;
 
 
     renderAll();
@@ -1307,30 +1312,26 @@ async function createCampaign(
 
     description:
       nullableText(
-        $(
-          "#campaignDescription"
-        ).value
+        $("#campaignDescription")
+          .value
       ),
 
     start_date:
       nullableDate(
-        $(
-          "#campaignStartDate"
-        ).value
+        $("#campaignStartDate")
+          .value
       ),
 
     end_date:
       nullableDate(
-        $(
-          "#campaignEndDate"
-        ).value
+        $("#campaignEndDate")
+          .value
       ),
 
     partnership_deadline:
       nullableDate(
-        $(
-          "#campaignPartnershipDeadline"
-        ).value
+        $("#campaignPartnershipDeadline")
+          .value
       ),
 
     created_by:
@@ -1355,9 +1356,8 @@ async function createCampaign(
     }
 
 
-    $(
-      "#campaignForm"
-    ).reset();
+    $("#campaignForm")
+      .reset();
 
 
     closeModal(
@@ -1600,23 +1600,20 @@ async function savePartner(
 
     industry:
       nullableText(
-        $(
-          "#partnerIndustry"
-        ).value
+        $("#partnerIndustry")
+          .value
       ),
 
     instagram:
       nullableText(
-        $(
-          "#partnerInstagram"
-        ).value
+        $("#partnerInstagram")
+          .value
       ),
 
     website:
       nullableText(
-        $(
-          "#partnerWebsite"
-        ).value
+        $("#partnerWebsite")
+          .value
       ),
 
     notes:
@@ -1662,13 +1659,12 @@ async function savePartner(
     }
 
 
-    $(
-      "#partnerForm"
-    ).reset();
+    $("#partnerForm")
+      .reset();
 
-    $(
-      "#partnerId"
-    ).value = "";
+
+    $("#partnerId")
+      .value = "";
 
 
     closeModal(
@@ -1774,6 +1770,7 @@ async function loadContactsForOrganization(
                 ${escapeHTML(
                   contact.name
                 )}
+
                 ${
                   contact.position
                     ? ` — ${escapeHTML(
@@ -1833,17 +1830,20 @@ async function loadCampaignData() {
 
 function clearCampaignData() {
   state.opportunities = [];
+
   state.opportunityOverview =
     [];
 
   state.tasks = [];
 
   state.targets = [];
+
   state.targetProgress = [];
 
   state.pipeline = [];
 
   state.mediaPartners = [];
+
   state.mediaPublications =
     [];
 
@@ -1944,9 +1944,8 @@ async function saveOpportunity(
 
   const organizationId =
     Number(
-      $(
-        "#opportunityOrganization"
-      ).value
+      $("#opportunityOrganization")
+        .value
     );
 
 
@@ -1978,9 +1977,8 @@ async function saveOpportunity(
 
     primary_contact_id:
       nullableNumber(
-        $(
-          "#opportunityContact"
-        ).value
+        $("#opportunityContact")
+          .value
       ),
 
     status:
@@ -2005,23 +2003,20 @@ async function saveOpportunity(
 
     next_action:
       nullableText(
-        $(
-          "#opportunityNextAction"
-        ).value
+        $("#opportunityNextAction")
+          .value
       ),
 
     next_action_due_at:
       toISODateTime(
-        $(
-          "#opportunityDueDate"
-        ).value
+        $("#opportunityDueDate")
+          .value
       ),
 
     notes:
       nullableText(
-        $(
-          "#opportunityNotes"
-        ).value
+        $("#opportunityNotes")
+          .value
       )
   };
 
@@ -2061,13 +2056,12 @@ async function saveOpportunity(
     }
 
 
-    $(
-      "#opportunityForm"
-    ).reset();
+    $("#opportunityForm")
+      .reset();
 
-    $(
-      "#opportunityId"
-    ).value = "";
+
+    $("#opportunityId")
+      .value = "";
 
 
     closeModal(
@@ -2111,21 +2105,18 @@ async function editOpportunity(
   }
 
 
-  $(
-    "#opportunityId"
-  ).value =
+  $("#opportunityId")
+    .value =
     opportunity.id;
 
 
-  $(
-    "#opportunityCampaign"
-  ).value =
+  $("#opportunityCampaign")
+    .value =
     opportunity.campaign_id;
 
 
-  $(
-    "#opportunityOrganization"
-  ).value =
+  $("#opportunityOrganization")
+    .value =
     opportunity.organization_id;
 
 
@@ -2134,58 +2125,50 @@ async function editOpportunity(
   );
 
 
-  $(
-    "#opportunityContact"
-  ).value =
+  $("#opportunityContact")
+    .value =
     opportunity.primary_contact_id ||
     "";
 
 
-  $(
-    "#opportunityOwner"
-  ).value =
+  $("#opportunityOwner")
+    .value =
     opportunity.assigned_to ||
     "";
 
 
-  $(
-    "#opportunityStatus"
-  ).value =
+  $("#opportunityStatus")
+    .value =
     opportunity.status;
 
 
-  $(
-    "#opportunityPriority"
-  ).value =
+  $("#opportunityPriority")
+    .value =
     opportunity.priority;
 
 
-  $(
-    "#potentialCash"
-  ).value =
+  $("#potentialCash")
+    .value =
     opportunity
       .potential_cash_value ||
     0;
 
 
-  $(
-    "#potentialInKind"
-  ).value =
+  $("#potentialInKind")
+    .value =
     opportunity
       .potential_in_kind_value ||
     0;
 
 
-  $(
-    "#opportunityNextAction"
-  ).value =
+  $("#opportunityNextAction")
+    .value =
     opportunity.next_action ||
     "";
 
 
-  $(
-    "#opportunityNotes"
-  ).value =
+  $("#opportunityNotes")
+    .value =
     opportunity.notes ||
     "";
 
@@ -2193,9 +2176,8 @@ async function editOpportunity(
   if (
     opportunity.next_action_due_at
   ) {
-    $(
-      "#opportunityDueDate"
-    ).value =
+    $("#opportunityDueDate")
+      .value =
       localDateTimeInputValue(
         new Date(
           opportunity.next_action_due_at
@@ -2203,9 +2185,8 @@ async function editOpportunity(
       );
 
   } else {
-    $(
-      "#opportunityDueDate"
-    ).value = "";
+    $("#opportunityDueDate")
+      .value = "";
   }
 
 
@@ -2268,25 +2249,21 @@ async function updateOpportunityStatus(
 function openNegotiation(
   opportunityId
 ) {
-  $(
-    "#negotiationForm"
-  ).reset();
+  $("#negotiationForm")
+    .reset();
 
 
-  $(
-    "#negotiationOpportunityId"
-  ).value =
+  $("#negotiationOpportunityId")
+    .value =
     opportunityId;
 
 
-  $(
-    "#negotiationCash"
-  ).value = 0;
+  $("#negotiationCash")
+    .value = 0;
 
 
-  $(
-    "#negotiationInKind"
-  ).value = 0;
+  $("#negotiationInKind")
+    .value = 0;
 
 
   openModal(
@@ -2303,9 +2280,8 @@ async function saveNegotiation(
 
   const opportunityId =
     Number(
-      $(
-        "#negotiationOpportunityId"
-      ).value
+      $("#negotiationOpportunityId")
+        .value
     );
 
 
@@ -2402,9 +2378,8 @@ async function saveNegotiation(
 
       negotiation_summary:
         nullableText(
-          $(
-            "#negotiationSummary"
-          ).value
+          $("#negotiationSummary")
+            .value
         ),
 
       is_final:
@@ -2461,27 +2436,39 @@ async function saveNegotiation(
     }
 
 
-    await supabase
-      .from("opportunities")
-      .update({
-        status:
-          newStatus,
+    const {
+      error:
+        opportunityError
+    } =
+      await supabase
+        .from(
+          "opportunities"
+        )
+        .update({
+          status:
+            newStatus,
 
-        potential_cash_value:
-          cashOffer,
+          potential_cash_value:
+            cashOffer,
 
-        potential_in_kind_value:
-          inKind
-      })
-      .eq(
-        "id",
-        opportunityId
-      );
+          potential_in_kind_value:
+            inKind
+        })
+        .eq(
+          "id",
+          opportunityId
+        );
 
 
-    $(
-      "#negotiationForm"
-    ).reset();
+    if (
+      opportunityError
+    ) {
+      throw opportunityError;
+    }
+
+
+    $("#negotiationForm")
+      .reset();
 
 
     closeModal(
@@ -2514,35 +2501,29 @@ async function saveNegotiation(
 function openCommitment(
   opportunityId
 ) {
-  $(
-    "#commitmentForm"
-  ).reset();
+  $("#commitmentForm")
+    .reset();
 
 
-  $(
-    "#commitmentOpportunityId"
-  ).value =
+  $("#commitmentOpportunityId")
+    .value =
     opportunityId;
 
 
-  $(
-    "#committedCash"
-  ).value = 0;
+  $("#committedCash")
+    .value = 0;
 
 
-  $(
-    "#receivedCash"
-  ).value = 0;
+  $("#receivedCash")
+    .value = 0;
 
 
-  $(
-    "#estimatedValue"
-  ).value = 0;
+  $("#estimatedValue")
+    .value = 0;
 
 
-  $(
-    "#quantityReceived"
-  ).value = 0;
+  $("#quantityReceived")
+    .value = 0;
 
 
   populateCampaignDependentSelects();
@@ -2576,17 +2557,15 @@ async function saveCommitment(
 
   const quantityCommitted =
     nullableNumber(
-      $(
-        "#quantityCommitted"
-      ).value
+      $("#quantityCommitted")
+        .value
     );
 
 
   const quantityReceived =
     parseNumber(
-      $(
-        "#quantityReceived"
-      ).value
+      $("#quantityReceived")
+        .value
     );
 
 
@@ -2621,16 +2600,14 @@ async function saveCommitment(
   const payload = {
     opportunity_id:
       Number(
-        $(
-          "#commitmentOpportunityId"
-        ).value
+        $("#commitmentOpportunityId")
+          .value
       ),
 
     campaign_target_id:
       nullableNumber(
-        $(
-          "#commitmentTarget"
-        ).value
+        $("#commitmentTarget")
+          .value
       ),
 
     support_type:
@@ -2679,9 +2656,8 @@ async function saveCommitment(
 
     expected_delivery_date:
       nullableDate(
-        $(
-          "#commitmentDeliveryDate"
-        ).value
+        $("#commitmentDeliveryDate")
+          .value
       ),
 
     notes:
@@ -2711,9 +2687,8 @@ async function saveCommitment(
     }
 
 
-    $(
-      "#commitmentForm"
-    ).reset();
+    $("#commitmentForm")
+      .reset();
 
 
     closeModal(
@@ -2830,9 +2805,8 @@ async function createTask(
 
     description:
       nullableText(
-        $(
-          "#taskDescription"
-        ).value
+        $("#taskDescription")
+          .value
       ),
 
     priority:
@@ -3068,9 +3042,8 @@ async function saveTarget(
 
     target_quantity:
       nullableNumber(
-        $(
-          "#targetQuantity"
-        ).value
+        $("#targetQuantity")
+          .value
       ),
 
     unit:
@@ -3081,9 +3054,8 @@ async function saveTarget(
 
     description:
       nullableText(
-        $(
-          "#targetDescription"
-        ).value
+        $("#targetDescription")
+          .value
       ),
 
     created_by:
@@ -3281,17 +3253,15 @@ async function saveMediaPublication(
         .value,
 
     content_type:
-      $(
-        "#mediaContentType"
-      ).value,
+      $("#mediaContentType")
+        .value,
 
     title,
 
     scheduled_at:
       toISODateTime(
-        $(
-          "#mediaScheduledAt"
-        ).value
+        $("#mediaScheduledAt")
+          .value
       ),
 
     proof_url:
@@ -3329,9 +3299,8 @@ async function saveMediaPublication(
     }
 
 
-    $(
-      "#mediaPublicationForm"
-    ).reset();
+    $("#mediaPublicationForm")
+      .reset();
 
 
     closeModal(
@@ -3374,6 +3343,7 @@ async function loadActivities() {
     !opportunityIds.length
   ) {
     state.activities = [];
+
     return;
   }
 
@@ -3599,7 +3569,7 @@ function renderNotifications() {
 
 
 /* ============================================================
-   33. POPULATE DEPENDENT SELECTS
+   33. DEPENDENT SELECTS
 ============================================================ */
 
 function populateCampaignDependentSelects() {
@@ -3620,18 +3590,16 @@ function populateCampaignDependentSelects() {
   if (
     $("#opportunityCampaign")
   ) {
-    $(
-      "#opportunityCampaign"
-    ).innerHTML =
+    $("#opportunityCampaign")
+      .innerHTML =
       campaignOptions;
 
 
     if (
       state.selectedCampaignId
     ) {
-      $(
-        "#opportunityCampaign"
-      ).value =
+      $("#opportunityCampaign")
+        .value =
         String(
           state.selectedCampaignId
         );
@@ -3656,15 +3624,14 @@ function populateCampaignDependentSelects() {
   if (
     $("#taskOpportunity")
   ) {
-    $(
-      "#taskOpportunity"
-    ).innerHTML = `
-      <option value="">
-        General Task
-      </option>
+    $("#taskOpportunity")
+      .innerHTML = `
+        <option value="">
+          General Task
+        </option>
 
-      ${opportunityOptions}
-    `;
+        ${opportunityOptions}
+      `;
   }
 
 
@@ -3690,9 +3657,8 @@ function populateCampaignDependentSelects() {
   if (
     $("#mediaOpportunity")
   ) {
-    $(
-      "#mediaOpportunity"
-    ).innerHTML =
+    $("#mediaOpportunity")
+      .innerHTML =
       mediaOptions ||
       `
         <option value="">
@@ -3705,27 +3671,26 @@ function populateCampaignDependentSelects() {
   if (
     $("#commitmentTarget")
   ) {
-    $(
-      "#commitmentTarget"
-    ).innerHTML = `
-      <option value="">
-        No specific target
-      </option>
+    $("#commitmentTarget")
+      .innerHTML = `
+        <option value="">
+          No specific target
+        </option>
 
-      ${
-        state.targets
-          .map(
-            (target) => `
-              <option value="${target.id}">
-                ${escapeHTML(
-                  target.target_name
-                )}
-              </option>
-            `
-          )
-          .join("")
-      }
-    `;
+        ${
+          state.targets
+            .map(
+              (target) => `
+                <option value="${target.id}">
+                  ${escapeHTML(
+                    target.target_name
+                  )}
+                </option>
+              `
+            )
+            .join("")
+        }
+      `;
   }
 }
 
@@ -3878,6 +3843,11 @@ function navigateTo(page) {
     `${meta.title} · HMM Partnership`;
 
 
+  $("#sidebar")
+    ?.classList
+    .remove("open");
+
+
   renderPage(page);
 }
 
@@ -3929,14 +3899,23 @@ function renderPage(page) {
 
 function renderAll() {
   renderOverview();
+
   renderTasks();
+
   renderPartners();
+
   renderPipeline();
+
   renderMediaPartners();
+
   renderTargets();
+
   renderTeam();
+
   renderCampaigns();
+
   renderUsers();
+
   renderNotifications();
 }
 
@@ -3953,15 +3932,20 @@ function renderOverview() {
 
   let greeting;
 
+
   if (hour < 11) {
     greeting =
       "Good morning.";
 
-  } else if (hour < 15) {
+  } else if (
+    hour < 15
+  ) {
     greeting =
       "Good afternoon.";
 
-  } else if (hour < 19) {
+  } else if (
+    hour < 19
+  ) {
     greeting =
       "Good evening.";
 
@@ -4359,12 +4343,6 @@ function targetProgressValues(
     targetValue > 0
   ) {
     return {
-      target:
-        targetValue,
-
-      current:
-        currentValue,
-
       percentage:
         Math.min(
           100,
@@ -4391,12 +4369,6 @@ function targetProgressValues(
 
 
   return {
-    target:
-      targetQuantity,
-
-    current:
-      currentQuantity,
-
     percentage:
       Math.min(
         100,
@@ -4592,9 +4564,7 @@ function renderRecentActivities() {
 
 function filteredPartners() {
   const query =
-    $(
-      "#partnerSearchInput"
-    )
+    $("#partnerSearchInput")
       ?.value
       ?.trim()
       ?.toLowerCase() ||
@@ -4818,17 +4788,13 @@ function renderTasks() {
 
 
   const deadlineFilter =
-    $(
-      "#taskDeadlineFilter"
-    )
+    $("#taskDeadlineFilter")
       ?.value ||
     "all";
 
 
   const priorityFilter =
-    $(
-      "#taskPriorityFilter"
-    )
+    $("#taskPriorityFilter")
       ?.value ||
     "all";
 
@@ -5427,7 +5393,7 @@ async function renderTeam() {
 
 
 /* ============================================================
-   48. CAMPAIGNS ADMIN RENDER
+   48. CAMPAIGNS ADMIN
 ============================================================ */
 
 function renderCampaigns() {
@@ -5890,7 +5856,7 @@ function exportActivities() {
 
 
 /* ============================================================
-   51. LOCAL DATETIME INPUT
+   51. LOCAL DATETIME
 ============================================================ */
 
 function localDateTimeInputValue(
@@ -5939,9 +5905,8 @@ function openCommandPalette() {
 
   setTimeout(
     () => {
-      $(
-        "#commandSearchInput"
-      )?.focus();
+      $("#commandSearchInput")
+        ?.focus();
     },
     50
   );
@@ -5957,9 +5922,8 @@ function closeCommandPalette() {
   if (
     $("#commandSearchInput")
   ) {
-    $(
-      "#commandSearchInput"
-    ).value = "";
+    $("#commandSearchInput")
+      .value = "";
   }
 }
 
@@ -6212,9 +6176,8 @@ function bindModalButtons() {
 
 
             const orgId =
-              $(
-                "#opportunityOrganization"
-              )?.value;
+              $("#opportunityOrganization")
+                ?.value;
 
 
             if (orgId) {
@@ -6295,9 +6258,8 @@ function bindModalButtons() {
             );
 
 
-            $(
-              "#mediaPublicationForm"
-            ).reset();
+            $("#mediaPublicationForm")
+              .reset();
 
 
             populateCampaignDependentSelects();
@@ -6383,6 +6345,19 @@ function bindEvents() {
     );
 
 
+  $("#mobileMenuButton")
+    ?.addEventListener(
+      "click",
+      () => {
+        $("#sidebar")
+          ?.classList
+          .toggle(
+            "open"
+          );
+      }
+    );
+
+
   $("#campaignSelect")
     ?.addEventListener(
       "change",
@@ -6425,9 +6400,7 @@ function bindEvents() {
     );
 
 
-  $(
-    "#mediaPublicationForm"
-  )
+  $("#mediaPublicationForm")
     ?.addEventListener(
       "submit",
       saveMediaPublication
@@ -6472,9 +6445,7 @@ function bindEvents() {
     ?.addEventListener(
       "click",
       () => {
-        $(
-          "#notificationDrawer"
-        )
+        $("#notificationDrawer")
           ?.classList
           .toggle(
             "hidden"
@@ -6672,6 +6643,13 @@ function bindEvents() {
         hide(
           $("#notificationDrawer")
         );
+
+
+        $("#sidebar")
+          ?.classList
+          .remove(
+            "open"
+          );
       }
     }
   );
@@ -6700,7 +6678,7 @@ function bindEvents() {
 
 
 /* ============================================================
-   56. AUTH EVENT HANDLER
+   56. AUTH STATE EVENTS
 ============================================================ */
 
 function bindAuthState() {
@@ -6718,11 +6696,6 @@ function bindAuthState() {
           session?.user ||
           null;
 
-
-        /*
-          Confirmation email callback
-          akan menghasilkan session.
-        */
 
         if (
           event ===
@@ -6742,13 +6715,10 @@ function bindAuthState() {
           event ===
             "SIGNED_IN" &&
           session?.user &&
-          !state.profile
+          !state.profile &&
+          !state.loadingProfile
         ) {
-          /*
-            Hindari duplicate bootstrap
-            ketika loginUser sudah
-            memanggil loadCurrentProfile.
-          */
+          await loadCurrentProfile();
         }
       }
     );
@@ -6756,7 +6726,7 @@ function bindAuthState() {
 
 
 /* ============================================================
-   57. INITIALIZE
+   57. INIT
 ============================================================ */
 
 async function init() {
@@ -6800,14 +6770,6 @@ async function init() {
       return;
     }
 
-
-    /*
-      Bisa terjadi jika user baru saja
-      klik email confirmation link.
-
-      Supabase otomatis menyimpan
-      session di browser.
-    */
 
     await loadCurrentProfile();
 
