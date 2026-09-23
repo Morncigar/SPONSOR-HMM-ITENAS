@@ -6801,8 +6801,11 @@ async function init() {
 init().catch((error) => {
   console.error("APP INIT ERROR:", error);
 
-  const loading = document.getElementById("appLoading");
-  const auth = document.getElementById("authScreen");
+  const loading =
+    document.getElementById("appLoading");
+
+  const auth =
+    document.getElementById("authScreen");
 
   if (loading) {
     loading.classList.add("hidden");
