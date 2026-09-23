@@ -34,67 +34,10 @@ Pasted text(20260923-075946).txt
 Document
 mana anj, coba tunjukin
 
-Nah iya, yang ini bener. Gue cek file .txt yang barusan lu upload langsung: nggak ada triple backtick sama sekali.
-
-Awalnya literally:
-
-/* ============================================================
-   HMM ITENAS PARTNERSHIP COMMAND CENTER
-   APP.JS — FINAL V1
-   ============================================================ */
-dan akhirnya:
-
-/* ============================================================
-   START
-============================================================ */
-
-init();
-Jadi gue koreksi: diagnosis gue soal backtick tadi nggak berlaku ke file JS yang sekarang. File JS lu sendiri secara framing awal/akhir aman. 
-
-
-Berarti mentok loading-nya kemungkinan besar bukan karena fence Markdown. Sekarang yang perlu gue cek justru isi index.html yang live / script tag Supabase + app.js, karena kalau CDN Supabase atau urutan script salah, hasilnya persis: CSS tampil, loading screen muncul, tapi init() nggak jalan.
-
-Kirim/upload index.html yang sekarang dipakai GitHub Pages, gue bedah exact titik rusaknya.
-
-
 
 Pasted text(20260923-080044).txt
 Document
 nih html nya
-
-Nah, HTML-nya gue cek. Script tag-nya benar: Supabase CDN dulu, baru app.js, dua-duanya pakai defer. 
-
- Dan loading screen + authScreen juga ID-nya cocok dengan JS. 
-
-
-Gue juga syntax-check app.js yang lu kirim pakai Node, dan lolos—nggak ada syntax error.
-
-Jadi sekarang narrowing-nya tinggal ini: browser nggak menjalankan app.js yang lu kira, atau Supabase CDN gagal load di GitHub Pages. Bukan HTML structure-nya.
-
-Coba satu fix paling aman dulu: pindahin dua <script> dari <head> ke paling bawah sebelum </body>. Jadi hapus bagian ini dari <head>:
-
-<script
-  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  defer
-></script>
-
-<script src="app.js" defer></script>
-Lalu taruh tepat sebelum </body> jadi:
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./app.js"></script>
-
-</body>
-</html>
-Sekalian ganti CSS jadi explicit relative path:
-
-<link rel="stylesheet" href="./style.css">
-Jadi <head> cukup punya CSS, dan script semua di bawah. Ini ngilangin satu lapis kemungkinan masalah timing/load order.
-
-Setelah commit, Ctrl+F5. Kalau masih loading, berarti tinggal satu tahap: gue bakal kasih lu app.js debug super pendek 10 baris yang cuma ngetes “Supabase kebaca / nggak” supaya kita tahu masalahnya dalam sekali refresh.
-
-
-bagi yang fulll baru dah
 
 Gas, gue bikin index.html full baru dari HTML lu yang tadi, isinya tetap sama tapi bagian load file gue rapihin:
 
@@ -130,64 +73,3932 @@ index.html
 HTML
 
 
-index.html
+harusnya aman yes?
+
+Harusnya jauh lebih aman sekarang.
+
+Dengan struktur baru:
+
+CSS pakai ./style.css
+
+Supabase CDN diload dulu
+
+app.js diload setelah Supabase
+
+dua script ditaruh di bawah sebelum </body>
+
+jadi risiko masalah timing/load order jauh berkurang.
+
+Tapi gue nggak mau bilang 100% pasti sebelum lu refresh live page. Jadi sekarang tinggal:
+
+commit/upload index.html baru,
+
+tunggu GitHub Pages update,
+
+Ctrl + F5.
+
+Kalau masih mentok loading, berarti problem berikutnya kemungkinan bukan HTML lagi, tapi runtime JS / Supabase client init, dan itu bisa kita pinpoint cepat dari Console.
 
 
+Pasted text(20260923-065812).txt Document 0b649069-0594-42a6-9622-1c8fa7378ddc.png sb_publishable_H4jRDxZdWg9hkDXbk9Sghg__ZeS5JzN 4006809c-3a2b-4d5c-a557-ca1ce0bc61d4.png d4b9c785-e60b-420e-978f-a11cccfb2ed8.png c2c49299-3e40-4f4d-8524-23f18c470a48.png itu phone enable juga apa gausah? biar bisa kirim ke whatsapp 1136dc42-f1a8-4521-88fb-702edff8a424.png udah aman harusnya 31427b95-2071-4436-9484-1830e38bf69d.png done 0ccb9cd8-1069-466a-9d87-550b068bd956.png mentok gini men Pasted markdown.md File Pasted markdown (2).md File nih hasilnya Pasted text(20260923-075946).txt Document mana anj, coba tunjukin Nah iya, yang ini bener. Gue cek file .txt yang barusan lu upload langsung: nggak ada triple backtick sama sekali. Awalnya literally: /* ============================================================ HMM ITENAS PARTNERSHIP COMMAND CENTER APP.JS — FINAL V1 ============================================================ */ dan akhirnya: /* ============================================================ START ============================================================ */ init(); Jadi gue koreksi: diagnosis gue soal backtick tadi nggak berlaku ke file JS yang sekarang. File JS lu sendiri secara framing awal/akhir aman. Berarti mentok loading-nya kemungkinan besar bukan karena fence Markdown. Sekarang yang perlu gue cek justru isi index.html yang live / script tag Supabase + app.js, karena kalau CDN Supabase atau urutan script salah, hasilnya persis: CSS tampil, loading screen muncul, tapi init() nggak jalan. Kirim/upload index.html yang sekarang dipakai GitHub Pages, gue bedah exact titik rusaknya. Pasted text(20260923-080044).txt Document nih html nya Nah, HTML-nya gue cek. Script tag-nya benar: Supabase CDN dulu, baru app.js, dua-duanya pakai defer. Dan loading screen + authScreen juga ID-nya cocok dengan JS. Gue juga syntax-check app.js yang lu kirim pakai Node, dan lolos—nggak ada syntax error. Jadi sekarang narrowing-nya tinggal ini: browser nggak menjalankan app.js yang lu kira, atau Supabase CDN gagal load di GitHub Pages. Bukan HTML structure-nya. Coba satu fix paling aman dulu: pindahin dua Lalu taruh tepat sebelum jadi: Sekalian ganti CSS jadi explicit relative path: Jadi cukup punya CSS, dan script semua di bawah. Ini ngilangin satu lapis kemungkinan masalah timing/load order. Setelah commit, Ctrl+F5. Kalau masih loading, berarti tinggal satu tahap: gue bakal kasih lu app.js debug super pendek 10 baris yang cuma ngetes “Supabase kebaca / nggak” supaya kita tahu masalahnya dalam sekali refresh. bagi yang fulll baru dah Gas, gue bikin index.html full baru dari HTML lu yang tadi, isinya tetap sama tapi bagian load file gue rapihin: CSS jadi ./style.css Supabase CDN dipindah ke paling bawah app.js dipindah ke paling bawah setelah Supabase defer gue buang supaya urutan eksekusinya jelas struktur HTML lain gue pertahankan Tinggal replace index.html lama lu pakai file ini: Download index.html final Bagian penting akhirnya sekarang jadi: dan CSS di jadi: HTML yang lu kirim memang sebelumnya load Supabase dan app.js dari . Abis upload/replace di GitHub → commit → tunggu Pages update → Ctrl + F5. index.html HTML index.html 3881 3882 3883 3884 3885 3886 3887 3888 3889 3890 3891 3892 3893 3894 3895 3896 3897 3898 3899 3900 3901 3902 3903 3904 3905 3906 3907 3908 3909 3910 3911 3912 3913 3914 3915 3916 3917 3918 3919 3920 3921 3922 3923 3924 3925 3926 3927 3928 3929 3930 3931 3932
+
+CancelCreate Campaign
+
+ko gini ajg
 
 
-3881
-3882
-3883
-3884
-3885
-3886
-3887
-3888
-3889
-3890
-3891
-3892
-3893
-3894
-3895
-3896
-3897
-3898
-3899
-3900
-3901
-3902
-3903
-3904
-3905
-3906
-3907
-3908
-3909
-3910
-3911
-3912
-3913
-3914
-3915
-3916
-3917
-3918
-3919
-3920
-3921
-3922
-3923
-3924
-3925
-3926
-3927
-3928
-3929
-3930
-3931
-3932
+Nah iya, tampilannya jadi aneh karena preview HTML di sini ngerender isi file, jadi yang keliatan bisa cuma potongan elemen kayak “Cancel / Create Campaign”. Bukan berarti file index.html-nya rusak.
+
+Gue cek file yang gue generate langsung di container: isinya mulai dari <!DOCTYPE html>, struktur utuh, dan berakhir dengan script Supabase + app.js. Gue juga cek nggak ada teks obrolan seperti “mentok gini”, “Pasted text”, dll di dalam file.
+
+Jadi lu jangan nilai dari preview ChatGPT-nya. Download filenya, terus upload/replace ke repo GitHub sebagai index.html.
+
+Pakai yang ini aja:
+
+Download index.html final
+
+Kalau lu mau, gue juga bisa bikinin versi .txt dari HTML yang sama biar lu bisa inspect isi mentahnya tanpa dirender browser.
+
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <meta
+    name="description"
+    content="HMM Itenas Partnership Command Center"
+  />
+
+  <meta
+    name="theme-color"
+    content="#0b1324"
+  />
+
+  <title>HMM Partnership Command Center</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+
+<body>
+
+  <!-- =========================================================
+       APP LOADING
+  ========================================================== -->
+
+  <div id="appLoading" class="app-loading">
+    <div class="loading-mark">
+      <span>HMM</span>
+    </div>
+
+    <p>Loading Partnership Command Center...</p>
+  </div>
+
+
+
+  <!-- =========================================================
+       AUTH SCREEN
+  ========================================================== -->
+
+  <main id="authScreen" class="auth-screen hidden">
+
+    <section class="auth-brand">
+
+      <div class="auth-brand-inner">
+
+        <div class="brand-kicker">
+          HMM ITENAS
+        </div>
+
+        <h1>
+          Partnership
+          <br />
+          Command Center.
+        </h1>
+
+        <p>
+          Centralized sponsorship, media partnership,
+          negotiation, fulfillment, and team operations.
+        </p>
+
+        <div class="auth-brand-footer">
+          Mechanical Engineering · Institut Teknologi Nasional
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="auth-panel">
+
+      <div class="auth-box">
+
+        <!-- ==========================
+             LOGIN
+        =========================== -->
+
+        <form id="loginForm" class="auth-form">
+
+          <div class="auth-heading">
+            <span class="eyebrow">WELCOME BACK</span>
+
+            <h2>Sign in</h2>
+
+            <p>
+              Continue to HMM Partnership Command Center.
+            </p>
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="loginEmail">
+              Email
+            </label>
+
+            <input
+              type="email"
+              id="loginEmail"
+              name="email"
+              autocomplete="email"
+              placeholder="name@email.com"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="loginPassword">
+              Password
+            </label>
+
+            <div class="password-field">
+
+              <input
+                type="password"
+                id="loginPassword"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-target="loginPassword"
+                aria-label="Show password"
+              >
+                Show
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="loginMessage"
+            class="form-message"
+            aria-live="polite"
+          ></div>
+
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-block"
+          >
+            Sign In
+          </button>
+
+
+          <div class="auth-switch">
+
+            <span>
+              Don't have an account?
+            </span>
+
+            <button
+              type="button"
+              id="showRegisterButton"
+              class="text-button"
+            >
+              Create account
+            </button>
+
+          </div>
+
+        </form>
+
+
+
+        <!-- ==========================
+             REGISTER
+        =========================== -->
+
+        <form
+          id="registerForm"
+          class="auth-form hidden"
+        >
+
+          <div class="auth-heading">
+
+            <span class="eyebrow">
+              JOIN THE TEAM
+            </span>
+
+            <h2>
+              Create account
+            </h2>
+
+            <p>
+              Register using your active email.
+            </p>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="registerName">
+              Full name
+            </label>
+
+            <input
+              type="text"
+              id="registerName"
+              name="fullName"
+              autocomplete="name"
+              placeholder="Your full name"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="registerEmail">
+              Email
+            </label>
+
+            <input
+              type="email"
+              id="registerEmail"
+              name="email"
+              autocomplete="email"
+              placeholder="name@email.com"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="registerPassword">
+              Password
+            </label>
+
+            <div class="password-field">
+
+              <input
+                type="password"
+                id="registerPassword"
+                name="password"
+                autocomplete="new-password"
+                minlength="8"
+                placeholder="Minimum 8 characters"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-target="registerPassword"
+              >
+                Show
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="registerPasswordConfirm">
+              Confirm password
+            </label>
+
+            <div class="password-field">
+
+              <input
+                type="password"
+                id="registerPasswordConfirm"
+                name="confirmPassword"
+                autocomplete="new-password"
+                minlength="8"
+                placeholder="Repeat your password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-target="registerPasswordConfirm"
+              >
+                Show
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="registerMessage"
+            class="form-message"
+            aria-live="polite"
+          ></div>
+
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-block"
+          >
+            Create Account
+          </button>
+
+
+          <div class="auth-switch">
+
+            <span>
+              Already registered?
+            </span>
+
+            <button
+              type="button"
+              id="showLoginButton"
+              class="text-button"
+            >
+              Sign in
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- =========================================================
+       MAIN APPLICATION
+  ========================================================== -->
+
+  <div id="appShell" class="app-shell hidden">
+
+
+    <!-- =======================================================
+         SIDEBAR
+    ======================================================== -->
+
+    <aside id="sidebar" class="sidebar">
+
+      <div class="sidebar-header">
+
+        <a
+          href="#"
+          class="brand"
+          data-page="overview"
+        >
+
+          <div class="brand-symbol">
+            HMM
+          </div>
+
+          <div class="brand-copy">
+            <strong>PARTNERSHIP</strong>
+            <span>COMMAND CENTER</span>
+          </div>
+
+        </a>
+
+      </div>
+
+
+
+      <nav class="sidebar-nav">
+
+        <div class="nav-section">
+
+          <span class="nav-section-label">
+            WORKSPACE
+          </span>
+
+
+          <button
+            class="nav-item active"
+            data-page="overview"
+          >
+            <span class="nav-icon">01</span>
+            <span>Overview</span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="tasks"
+          >
+            <span class="nav-icon">02</span>
+            <span>My Tasks</span>
+
+            <span
+              id="sidebarTaskBadge"
+              class="nav-badge hidden"
+            >
+              0
+            </span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="partners"
+          >
+            <span class="nav-icon">03</span>
+            <span>Partners</span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="pipeline"
+          >
+            <span class="nav-icon">04</span>
+            <span>Pipeline</span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="media"
+          >
+            <span class="nav-icon">05</span>
+            <span>Media Partners</span>
+          </button>
+
+        </div>
+
+
+
+        <div class="nav-section">
+
+          <span class="nav-section-label">
+            PERFORMANCE
+          </span>
+
+
+          <button
+            class="nav-item"
+            data-page="targets"
+          >
+            <span class="nav-icon">06</span>
+            <span>Targets & Needs</span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="team"
+          >
+            <span class="nav-icon">07</span>
+            <span>Team</span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="reports"
+          >
+            <span class="nav-icon">08</span>
+            <span>Reports</span>
+          </button>
+
+        </div>
+
+
+
+        <div
+          id="adminNavigation"
+          class="nav-section admin-only hidden"
+        >
+
+          <span class="nav-section-label">
+            ADMIN
+          </span>
+
+
+          <button
+            class="nav-item"
+            data-page="campaigns"
+          >
+            <span class="nav-icon">09</span>
+            <span>Campaigns</span>
+          </button>
+
+
+          <button
+            class="nav-item"
+            data-page="admin-users"
+          >
+            <span class="nav-icon">10</span>
+            <span>Users</span>
+          </button>
+
+        </div>
+
+      </nav>
+
+
+
+      <div class="sidebar-footer">
+
+        <div class="sidebar-user">
+
+          <div
+            id="sidebarUserAvatar"
+            class="user-avatar"
+          >
+            FP
+          </div>
+
+          <div class="sidebar-user-info">
+
+            <strong id="sidebarUserName">
+              User
+            </strong>
+
+            <span id="sidebarUserRole">
+              Sponsor Staff
+            </span>
+
+          </div>
+
+
+          <button
+            id="logoutButton"
+            class="icon-button"
+            title="Logout"
+            type="button"
+          >
+            ↗
+          </button>
+
+        </div>
+
+      </div>
+
+    </aside>
+
+
+
+    <!-- =======================================================
+         MAIN CONTENT
+    ======================================================== -->
+
+    <div class="main-area">
+
+
+      <!-- =====================================================
+           TOPBAR
+      ====================================================== -->
+
+      <header class="topbar">
+
+        <div class="topbar-left">
+
+          <button
+            id="mobileMenuButton"
+            class="mobile-menu-button"
+            type="button"
+          >
+            ☰
+          </button>
+
+
+          <div class="topbar-title">
+
+            <span id="pageEyebrow">
+              WORKSPACE
+            </span>
+
+            <h1 id="pageTitle">
+              Overview
+            </h1>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="topbar-actions">
+
+          <div class="campaign-selector">
+
+            <label for="campaignSelect">
+              Campaign
+            </label>
+
+            <select id="campaignSelect">
+              <option value="">
+                Select campaign
+              </option>
+            </select>
+
+          </div>
+
+
+          <button
+            id="globalSearchButton"
+            class="header-action-button"
+            type="button"
+          >
+            Search
+            <kbd>⌘ K</kbd>
+          </button>
+
+
+          <button
+            id="notificationButton"
+            class="notification-button"
+            type="button"
+          >
+            <span>Notifications</span>
+
+            <span
+              id="notificationBadge"
+              class="notification-badge hidden"
+            >
+              0
+            </span>
+          </button>
+
+
+          <button
+            id="quickAddButton"
+            class="btn btn-primary"
+            type="button"
+          >
+            + Add
+          </button>
+
+        </div>
+
+      </header>
+
+
+
+      <!-- =====================================================
+           PAGE CONTENT
+      ====================================================== -->
+
+      <main class="content">
+
+
+
+        <!-- ===================================================
+             OVERVIEW
+        ==================================================== -->
+
+        <section
+          id="page-overview"
+          class="page-section active"
+          data-page-section="overview"
+        >
+
+          <div class="overview-hero">
+
+            <div>
+
+              <span class="eyebrow">
+                PARTNERSHIP OVERVIEW
+              </span>
+
+              <h2 id="overviewGreeting">
+                Good afternoon.
+              </h2>
+
+              <p>
+                Here's what your partnership team needs today.
+              </p>
+
+            </div>
+
+
+            <div class="overview-actions">
+
+              <button
+                id="refreshDashboardButton"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Refresh
+              </button>
+
+              <button
+                id="exportOverviewButton"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Export Overview
+              </button>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- SUMMARY METRICS -->
+
+          <div class="metric-grid">
+
+            <article class="metric-card">
+
+              <span class="metric-label">
+                CASH SECURED
+              </span>
+
+              <strong
+                id="metricCashSecured"
+                class="metric-value"
+              >
+                Rp0
+              </strong>
+
+              <span class="metric-caption">
+                Received partnership cash
+              </span>
+
+            </article>
+
+
+
+            <article class="metric-card">
+
+              <span class="metric-label">
+                IN-KIND VALUE
+              </span>
+
+              <strong
+                id="metricInKind"
+                class="metric-value"
+              >
+                Rp0
+              </strong>
+
+              <span class="metric-caption">
+                Estimated non-cash value
+              </span>
+
+            </article>
+
+
+
+            <article class="metric-card">
+
+              <span class="metric-label">
+                ACTIVE PARTNERS
+              </span>
+
+              <strong
+                id="metricActivePartners"
+                class="metric-value"
+              >
+                0
+              </strong>
+
+              <span class="metric-caption">
+                Active opportunities
+              </span>
+
+            </article>
+
+
+
+            <article class="metric-card">
+
+              <span class="metric-label">
+                MEDIA PARTNERS
+              </span>
+
+              <strong
+                id="metricMediaPartners"
+                class="metric-value"
+              >
+                0
+              </strong>
+
+              <span class="metric-caption">
+                Confirmed / active media
+              </span>
+
+            </article>
+
+
+
+            <article class="metric-card">
+
+              <span class="metric-label">
+                FOLLOW-UP TODAY
+              </span>
+
+              <strong
+                id="metricTodayTasks"
+                class="metric-value"
+              >
+                0
+              </strong>
+
+              <span class="metric-caption">
+                Actions due today
+              </span>
+
+            </article>
+
+
+
+            <article class="metric-card danger-card">
+
+              <span class="metric-label">
+                NEED ATTENTION
+              </span>
+
+              <strong
+                id="metricAtRisk"
+                class="metric-value"
+              >
+                0
+              </strong>
+
+              <span class="metric-caption">
+                At-risk opportunities
+              </span>
+
+            </article>
+
+          </div>
+
+
+
+          <!-- MAIN OVERVIEW GRID -->
+
+          <div class="dashboard-grid">
+
+
+            <!-- TODAY -->
+
+            <section class="dashboard-card dashboard-card-large">
+
+              <div class="card-header">
+
+                <div>
+                  <span class="eyebrow">
+                    ACTION CENTER
+                  </span>
+
+                  <h3>Today's Actions</h3>
+                </div>
+
+                <button
+                  class="text-button"
+                  data-page="tasks"
+                  type="button"
+                >
+                  View all
+                </button>
+
+              </div>
+
+
+              <div
+                id="todayTasksList"
+                class="task-list"
+              >
+
+                <div class="empty-state">
+                  No tasks due today.
+                </div>
+
+              </div>
+
+            </section>
+
+
+
+            <!-- NEEDS ATTENTION -->
+
+            <section class="dashboard-card">
+
+              <div class="card-header">
+
+                <div>
+
+                  <span class="eyebrow">
+                    EXCEPTIONS
+                  </span>
+
+                  <h3>
+                    Needs Attention
+                  </h3>
+
+                </div>
+
+              </div>
+
+
+              <div
+                id="attentionList"
+                class="attention-list"
+              >
+
+                <div class="empty-state">
+                  No partnership issues detected.
+                </div>
+
+              </div>
+
+            </section>
+
+
+
+            <!-- PIPELINE SNAPSHOT -->
+
+            <section class="dashboard-card dashboard-card-full">
+
+              <div class="card-header">
+
+                <div>
+
+                  <span class="eyebrow">
+                    ACQUISITION
+                  </span>
+
+                  <h3>
+                    Pipeline Snapshot
+                  </h3>
+
+                </div>
+
+                <button
+                  class="text-button"
+                  data-page="pipeline"
+                  type="button"
+                >
+                  Open pipeline
+                </button>
+
+              </div>
+
+
+              <div
+                id="pipelineSnapshot"
+                class="pipeline-summary"
+              >
+
+                <div class="pipeline-summary-item">
+                  <span>Prospect</span>
+                  <strong id="pipelineProspectCount">0</strong>
+                </div>
+
+                <div class="pipeline-summary-item">
+                  <span>Contacted</span>
+                  <strong id="pipelineContactedCount">0</strong>
+                </div>
+
+                <div class="pipeline-summary-item">
+                  <span>Proposal</span>
+                  <strong id="pipelineProposalCount">0</strong>
+                </div>
+
+                <div class="pipeline-summary-item">
+                  <span>Negotiation</span>
+                  <strong id="pipelineNegotiationCount">0</strong>
+                </div>
+
+                <div class="pipeline-summary-item">
+                  <span>Confirmed</span>
+                  <strong id="pipelineConfirmedCount">0</strong>
+                </div>
+
+                <div class="pipeline-summary-item">
+                  <span>Completed</span>
+                  <strong id="pipelineCompletedCount">0</strong>
+                </div>
+
+              </div>
+
+            </section>
+
+
+
+            <!-- TARGET PROGRESS -->
+
+            <section class="dashboard-card dashboard-card-large">
+
+              <div class="card-header">
+
+                <div>
+
+                  <span class="eyebrow">
+                    CAMPAIGN NEEDS
+                  </span>
+
+                  <h3>
+                    Target Coverage
+                  </h3>
+
+                </div>
+
+                <button
+                  class="text-button"
+                  data-page="targets"
+                  type="button"
+                >
+                  View details
+                </button>
+
+              </div>
+
+
+              <div
+                id="targetProgressList"
+                class="target-progress-list"
+              >
+
+                <div class="empty-state">
+                  No campaign target available.
+                </div>
+
+              </div>
+
+            </section>
+
+
+
+            <!-- ACTIVITY -->
+
+            <section class="dashboard-card">
+
+              <div class="card-header">
+
+                <div>
+
+                  <span class="eyebrow">
+                    LIVE ACTIVITY
+                  </span>
+
+                  <h3>
+                    Recent Activity
+                  </h3>
+
+                </div>
+
+              </div>
+
+
+              <div
+                id="recentActivityList"
+                class="activity-list"
+              >
+
+                <div class="empty-state">
+                  No recent activity.
+                </div>
+
+              </div>
+
+            </section>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             MY TASKS
+        ==================================================== -->
+
+        <section
+          id="page-tasks"
+          class="page-section"
+          data-page-section="tasks"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                ACTION CENTER
+              </span>
+
+              <h2>My Tasks</h2>
+
+              <p>
+                Follow-up, deadlines, and next actions.
+              </p>
+
+            </div>
+
+
+            <button
+              id="addTaskButton"
+              class="btn btn-primary"
+              type="button"
+            >
+              + New Task
+            </button>
+
+          </div>
+
+
+
+          <div class="filter-bar">
+
+            <select id="taskStatusFilter">
+              <option value="active">
+                Active
+              </option>
+
+              <option value="todo">
+                To Do
+              </option>
+
+              <option value="in_progress">
+                In Progress
+              </option>
+
+              <option value="done">
+                Done
+              </option>
+
+              <option value="all">
+                All
+              </option>
+            </select>
+
+
+            <select id="taskDeadlineFilter">
+              <option value="all">
+                Any deadline
+              </option>
+
+              <option value="overdue">
+                Overdue
+              </option>
+
+              <option value="today">
+                Today
+              </option>
+
+              <option value="upcoming">
+                Upcoming
+              </option>
+            </select>
+
+
+            <select id="taskPriorityFilter">
+              <option value="all">
+                All priorities
+              </option>
+
+              <option value="urgent">
+                Urgent
+              </option>
+
+              <option value="high">
+                High
+              </option>
+
+              <option value="medium">
+                Medium
+              </option>
+
+              <option value="low">
+                Low
+              </option>
+            </select>
+
+          </div>
+
+
+
+          <div
+            id="tasksContainer"
+            class="tasks-container"
+          >
+
+            <div class="empty-state">
+              No tasks found.
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             PARTNERS
+        ==================================================== -->
+
+        <section
+          id="page-partners"
+          class="page-section"
+          data-page-section="partners"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                PARTNERSHIP CRM
+              </span>
+
+              <h2>Partners</h2>
+
+              <p>
+                Sponsors, media partners, and collaboration database.
+              </p>
+
+            </div>
+
+
+            <button
+              id="addPartnerButton"
+              class="btn btn-primary"
+              type="button"
+            >
+              + Add Partner
+            </button>
+
+          </div>
+
+
+
+          <div class="toolbar">
+
+            <div class="search-field">
+
+              <input
+                type="search"
+                id="partnerSearchInput"
+                placeholder="Search organization..."
+              />
+
+            </div>
+
+
+            <div class="toolbar-filters">
+
+              <select id="partnerTypeFilter">
+
+                <option value="all">
+                  All partner types
+                </option>
+
+                <option value="sponsor">
+                  Sponsor
+                </option>
+
+                <option value="media_partner">
+                  Media Partner
+                </option>
+
+                <option value="community_partner">
+                  Community
+                </option>
+
+                <option value="venue_partner">
+                  Venue Partner
+                </option>
+
+                <option value="vendor_support">
+                  Vendor Support
+                </option>
+
+                <option value="other">
+                  Other
+                </option>
+
+              </select>
+
+
+              <select id="partnerStatusFilter">
+
+                <option value="all">
+                  All status
+                </option>
+
+                <option value="prospect">
+                  Prospect
+                </option>
+
+                <option value="contacted">
+                  Contacted
+                </option>
+
+                <option value="proposal_sent">
+                  Proposal Sent
+                </option>
+
+                <option value="follow_up">
+                  Follow Up
+                </option>
+
+                <option value="negotiation">
+                  Negotiation
+                </option>
+
+                <option value="confirmed">
+                  Confirmed
+                </option>
+
+                <option value="fulfillment">
+                  Fulfillment
+                </option>
+
+                <option value="completed">
+                  Completed
+                </option>
+
+                <option value="cold">
+                  Cold
+                </option>
+
+                <option value="dormant">
+                  Dormant
+                </option>
+
+                <option value="rejected">
+                  Rejected
+                </option>
+
+                <option value="lost">
+                  Lost
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="table-wrapper">
+
+            <table class="data-table">
+
+              <thead>
+
+                <tr>
+                  <th>Organization</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>PIC</th>
+                  <th>Potential</th>
+                  <th>Next Action</th>
+                  <th>Due</th>
+                  <th>Health</th>
+                  <th></th>
+                </tr>
+
+              </thead>
+
+
+              <tbody id="partnerTableBody">
+
+                <tr class="empty-row">
+
+                  <td colspan="9">
+                    No partners available.
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             PIPELINE
+        ==================================================== -->
+
+        <section
+          id="page-pipeline"
+          class="page-section"
+          data-page-section="pipeline"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                ACQUISITION PIPELINE
+              </span>
+
+              <h2>Pipeline</h2>
+
+              <p>
+                Track partnership opportunities from prospect to completion.
+              </p>
+
+            </div>
+
+
+            <button
+              id="pipelineAddOpportunityButton"
+              class="btn btn-primary"
+              type="button"
+            >
+              + New Opportunity
+            </button>
+
+          </div>
+
+
+
+          <div
+            id="pipelineBoard"
+            class="pipeline-board"
+          >
+
+
+            <section
+              class="pipeline-column"
+              data-status="prospect"
+            >
+
+              <header>
+                <span>PROSPECT</span>
+                <strong data-pipeline-count="prospect">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-prospect"
+              ></div>
+
+            </section>
+
+
+
+            <section
+              class="pipeline-column"
+              data-status="contacted"
+            >
+
+              <header>
+                <span>CONTACTED</span>
+                <strong data-pipeline-count="contacted">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-contacted"
+              ></div>
+
+            </section>
+
+
+
+            <section
+              class="pipeline-column"
+              data-status="proposal_sent"
+            >
+
+              <header>
+                <span>PROPOSAL</span>
+                <strong data-pipeline-count="proposal_sent">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-proposal_sent"
+              ></div>
+
+            </section>
+
+
+
+            <section
+              class="pipeline-column"
+              data-status="follow_up"
+            >
+
+              <header>
+                <span>FOLLOW UP</span>
+                <strong data-pipeline-count="follow_up">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-follow_up"
+              ></div>
+
+            </section>
+
+
+
+            <section
+              class="pipeline-column"
+              data-status="negotiation"
+            >
+
+              <header>
+                <span>NEGOTIATION</span>
+                <strong data-pipeline-count="negotiation">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-negotiation"
+              ></div>
+
+            </section>
+
+
+
+            <section
+              class="pipeline-column"
+              data-status="confirmed"
+            >
+
+              <header>
+                <span>CONFIRMED</span>
+                <strong data-pipeline-count="confirmed">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-confirmed"
+              ></div>
+
+            </section>
+
+
+
+            <section
+              class="pipeline-column"
+              data-status="fulfillment"
+            >
+
+              <header>
+                <span>FULFILLMENT</span>
+                <strong data-pipeline-count="fulfillment">0</strong>
+              </header>
+
+              <div
+                class="pipeline-column-body"
+                id="pipeline-fulfillment"
+              ></div>
+
+            </section>
+
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             MEDIA PARTNERS
+        ==================================================== -->
+
+        <section
+          id="page-media"
+          class="page-section"
+          data-page-section="media"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                MEDIA PARTNERS
+              </span>
+
+              <h2>Publication Tracker</h2>
+
+              <p>
+                Track media commitments, publishing schedule, and results.
+              </p>
+
+            </div>
+
+
+            <button
+              id="addMediaPublicationButton"
+              class="btn btn-primary"
+              type="button"
+            >
+              + Add Publication
+            </button>
+
+          </div>
+
+
+
+          <div
+            id="mediaPartnerGrid"
+            class="media-partner-grid"
+          >
+
+            <div class="empty-state">
+              No media partner data available.
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             TARGETS
+        ==================================================== -->
+
+        <section
+          id="page-targets"
+          class="page-section"
+          data-page-section="targets"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                CAMPAIGN NEEDS
+              </span>
+
+              <h2>
+                Targets & Needs
+              </h2>
+
+              <p>
+                Target versus actual partnership coverage.
+              </p>
+
+            </div>
+
+
+            <button
+              id="addTargetButton"
+              class="btn btn-primary admin-only hidden"
+              type="button"
+            >
+              + Add Target
+            </button>
+
+          </div>
+
+
+
+          <div
+            id="targetCardsContainer"
+            class="target-grid"
+          >
+
+            <div class="empty-state">
+              No targets configured.
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             TEAM
+        ==================================================== -->
+
+        <section
+          id="page-team"
+          class="page-section"
+          data-page-section="team"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                TEAM OPERATIONS
+              </span>
+
+              <h2>
+                Sponsor Staff
+              </h2>
+
+              <p>
+                Workload, activity, and operational visibility.
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <div
+            id="teamGrid"
+            class="team-grid"
+          >
+
+            <div class="empty-state">
+              No team data available.
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             REPORTS
+        ==================================================== -->
+
+        <section
+          id="page-reports"
+          class="page-section"
+          data-page-section="reports"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                REPORTING
+              </span>
+
+              <h2>
+                Reports & Export
+              </h2>
+
+              <p>
+                Generate operational partnership reports.
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="report-grid">
+
+
+            <article class="report-card">
+
+              <span class="report-type">
+                OVERVIEW
+              </span>
+
+              <h3>
+                Campaign Overview
+              </h3>
+
+              <p>
+                Partnership summary, target progress, pipeline,
+                and secured value.
+              </p>
+
+              <button
+                id="exportCampaignOverviewButton"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Export XLSX
+              </button>
+
+            </article>
+
+
+
+            <article class="report-card">
+
+              <span class="report-type">
+                CRM
+              </span>
+
+              <h3>
+                Partner Database
+              </h3>
+
+              <p>
+                Organizations, status, owners, value,
+                next actions, and health.
+              </p>
+
+              <button
+                id="exportPartnerDatabaseButton"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Export XLSX
+              </button>
+
+            </article>
+
+
+
+            <article class="report-card">
+
+              <span class="report-type">
+                MEDIA
+              </span>
+
+              <h3>
+                Media Partner Report
+              </h3>
+
+              <p>
+                Publication status, links, reach,
+                impressions, and deliverables.
+              </p>
+
+              <button
+                id="exportMediaReportButton"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Export XLSX
+              </button>
+
+            </article>
+
+
+
+            <article class="report-card">
+
+              <span class="report-type">
+                AUDIT
+              </span>
+
+              <h3>
+                Activity Log
+              </h3>
+
+              <p>
+                Full operational activity and update history.
+              </p>
+
+              <button
+                id="exportActivityButton"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Export XLSX
+              </button>
+
+            </article>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             CAMPAIGNS — ADMIN
+        ==================================================== -->
+
+        <section
+          id="page-campaigns"
+          class="page-section admin-only"
+          data-page-section="campaigns"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                ADMIN
+              </span>
+
+              <h2>Campaigns</h2>
+
+              <p>
+                Manage partnership periods and major targets.
+              </p>
+
+            </div>
+
+
+            <button
+              id="createCampaignButton"
+              class="btn btn-primary"
+              type="button"
+            >
+              + New Campaign
+            </button>
+
+          </div>
+
+
+
+          <div
+            id="campaignList"
+            class="campaign-list"
+          >
+
+            <div class="empty-state">
+              No campaign available.
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- ===================================================
+             USERS — ADMIN
+        ==================================================== -->
+
+        <section
+          id="page-admin-users"
+          class="page-section admin-only"
+          data-page-section="admin-users"
+        >
+
+          <div class="page-header">
+
+            <div>
+
+              <span class="eyebrow">
+                ADMIN
+              </span>
+
+              <h2>
+                User Management
+              </h2>
+
+              <p>
+                Account status and operational access.
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="table-wrapper">
+
+            <table class="data-table">
+
+              <thead>
+
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Last Active</th>
+                  <th></th>
+                </tr>
+
+              </thead>
+
+
+              <tbody id="userTableBody">
+
+                <tr class="empty-row">
+
+                  <td colspan="6">
+                    No users available.
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </section>
+
+
+      </main>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       GLOBAL SEARCH / COMMAND PALETTE
+  ========================================================== -->
+
+  <div
+    id="commandPalette"
+    class="modal-overlay hidden"
+  >
+
+    <div class="command-modal">
+
+      <div class="command-input-wrapper">
+
+        <input
+          id="commandSearchInput"
+          type="search"
+          placeholder="Search partners, actions, pages..."
+          autocomplete="off"
+        />
+
+      </div>
+
+
+      <div
+        id="commandResults"
+        class="command-results"
+      >
+
+        <button
+          type="button"
+          class="command-item"
+          data-command-page="overview"
+        >
+          Go to Overview
+        </button>
+
+        <button
+          type="button"
+          class="command-item"
+          data-command-page="partners"
+        >
+          Open Partners
+        </button>
+
+        <button
+          type="button"
+          class="command-item"
+          data-command-page="pipeline"
+        >
+          Open Pipeline
+        </button>
+
+        <button
+          type="button"
+          class="command-item"
+          data-command-page="tasks"
+        >
+          Open My Tasks
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       NOTIFICATION DRAWER
+  ========================================================== -->
+
+  <aside
+    id="notificationDrawer"
+    class="notification-drawer hidden"
+  >
+
+    <div class="drawer-header">
+
+      <div>
+
+        <span class="eyebrow">
+          NOTIFICATIONS
+        </span>
+
+        <h3>
+          Activity Center
+        </h3>
+
+      </div>
+
+
+      <button
+        id="closeNotificationButton"
+        class="icon-button"
+        type="button"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="drawer-actions">
+
+      <button
+        id="markAllReadButton"
+        class="text-button"
+        type="button"
+      >
+        Mark all as read
+      </button>
+
+    </div>
+
+
+    <div
+      id="notificationList"
+      class="notification-list"
+    >
+
+      <div class="empty-state">
+        No notifications.
+      </div>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- =========================================================
+       MODAL: QUICK ADD
+  ========================================================== -->
+
+  <div
+    id="quickAddModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="eyebrow">
+            QUICK ADD
+          </span>
+
+          <h3>
+            What do you want to add?
+          </h3>
+
+        </div>
+
+
+        <button
+          class="modal-close"
+          data-close-modal="quickAddModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="quick-add-grid">
+
+        <button
+          class="quick-add-item"
+          id="quickAddPartner"
+          type="button"
+        >
+          <strong>Partner</strong>
+          <span>Add organization or media partner</span>
+        </button>
+
+
+        <button
+          class="quick-add-item"
+          id="quickAddOpportunity"
+          type="button"
+        >
+          <strong>Opportunity</strong>
+          <span>Create partnership opportunity</span>
+        </button>
+
+
+        <button
+          class="quick-add-item"
+          id="quickAddTask"
+          type="button"
+        >
+          <strong>Task</strong>
+          <span>Create CTA or follow-up</span>
+        </button>
+
+
+        <button
+          class="quick-add-item"
+          id="quickAddPublication"
+          type="button"
+        >
+          <strong>Media Publication</strong>
+          <span>Add media partner commitment</span>
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: ADD ORGANIZATION
+  ========================================================== -->
+
+  <div
+    id="partnerModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal modal-large">
+
+      <div class="modal-header">
+
+        <div>
+          <span class="eyebrow">
+            CRM
+          </span>
+
+          <h3 id="partnerModalTitle">
+            Add Partner
+          </h3>
+        </div>
+
+
+        <button
+          class="modal-close"
+          data-close-modal="partnerModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="partnerForm">
+
+        <input
+          type="hidden"
+          id="partnerId"
+        />
+
+
+        <div class="form-grid">
+
+          <div class="form-group span-2">
+
+            <label for="partnerName">
+              Organization Name *
+            </label>
+
+            <input
+              type="text"
+              id="partnerName"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="partnerType">
+              Partner Type *
+            </label>
+
+            <select
+              id="partnerType"
+              required
+            >
+
+              <option value="sponsor">
+                Sponsor
+              </option>
+
+              <option value="media_partner">
+                Media Partner
+              </option>
+
+              <option value="community_partner">
+                Community Partner
+              </option>
+
+              <option value="venue_partner">
+                Venue Partner
+              </option>
+
+              <option value="vendor_support">
+                Vendor Support
+              </option>
+
+              <option value="other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="partnerIndustry">
+              Industry
+            </label>
+
+            <input
+              type="text"
+              id="partnerIndustry"
+              placeholder="F&B, Banking, Media..."
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="partnerInstagram">
+              Instagram
+            </label>
+
+            <input
+              type="text"
+              id="partnerInstagram"
+              placeholder="@username"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="partnerWebsite">
+              Website
+            </label>
+
+            <input
+              type="url"
+              id="partnerWebsite"
+            />
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="partnerNotes">
+              Notes
+            </label>
+
+            <textarea
+              id="partnerNotes"
+              rows="4"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="partnerModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Partner
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: ADD OPPORTUNITY
+  ========================================================== -->
+
+  <div
+    id="opportunityModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal modal-large">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="eyebrow">
+            PARTNERSHIP
+          </span>
+
+          <h3>
+            New Opportunity
+          </h3>
+
+        </div>
+
+
+        <button
+          class="modal-close"
+          data-close-modal="opportunityModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="opportunityForm">
+
+        <input
+          type="hidden"
+          id="opportunityId"
+        />
+
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label for="opportunityCampaign">
+              Campaign *
+            </label>
+
+            <select
+              id="opportunityCampaign"
+              required
+            ></select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="opportunityOrganization">
+              Organization *
+            </label>
+
+            <select
+              id="opportunityOrganization"
+              required
+            ></select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="opportunityOwner">
+              PIC Internal
+            </label>
+
+            <select id="opportunityOwner"></select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="opportunityContact">
+              Contact Person
+            </label>
+
+            <select id="opportunityContact">
+
+              <option value="">
+                No contact selected
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="opportunityStatus">
+              Status
+            </label>
+
+            <select id="opportunityStatus">
+
+              <option value="prospect">
+                Prospect
+              </option>
+
+              <option value="contacted">
+                Contacted
+              </option>
+
+              <option value="proposal_sent">
+                Proposal Sent
+              </option>
+
+              <option value="follow_up">
+                Follow Up
+              </option>
+
+              <option value="negotiation">
+                Negotiation
+              </option>
+
+              <option value="confirmed">
+                Confirmed
+              </option>
+
+              <option value="fulfillment">
+                Fulfillment
+              </option>
+
+              <option value="completed">
+                Completed
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="opportunityPriority">
+              Priority
+            </label>
+
+            <select id="opportunityPriority">
+
+              <option value="low">
+                Low
+              </option>
+
+              <option
+                value="medium"
+                selected
+              >
+                Medium
+              </option>
+
+              <option value="high">
+                High
+              </option>
+
+              <option value="urgent">
+                Urgent
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="potentialCash">
+              Potential Cash
+            </label>
+
+            <input
+              type="number"
+              id="potentialCash"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="potentialInKind">
+              Potential In-Kind
+            </label>
+
+            <input
+              type="number"
+              id="potentialInKind"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="opportunityNextAction">
+              Next Action
+            </label>
+
+            <input
+              type="text"
+              id="opportunityNextAction"
+              placeholder="Follow-up PIC, send proposal..."
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="opportunityDueDate">
+              Next Action Deadline
+            </label>
+
+            <input
+              type="datetime-local"
+              id="opportunityDueDate"
+            />
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="opportunityNotes">
+              Notes
+            </label>
+
+            <textarea
+              id="opportunityNotes"
+              rows="4"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="opportunityModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Opportunity
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: TASK
+  ========================================================== -->
+
+  <div
+    id="taskModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <div>
+          <span class="eyebrow">
+            CTA
+          </span>
+
+          <h3>
+            New Task
+          </h3>
+        </div>
+
+        <button
+          class="modal-close"
+          data-close-modal="taskModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="taskForm">
+
+        <div class="form-group">
+
+          <label for="taskTitle">
+            Action *
+          </label>
+
+          <input
+            type="text"
+            id="taskTitle"
+            required
+            placeholder="Follow-up Wingman"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="taskOpportunity">
+            Related Partner
+          </label>
+
+          <select id="taskOpportunity">
+
+            <option value="">
+              General Task
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="taskAssignedTo">
+            Assigned To *
+          </label>
+
+          <select
+            id="taskAssignedTo"
+            required
+          ></select>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="taskPriority">
+              Priority
+            </label>
+
+            <select id="taskPriority">
+
+              <option value="low">
+                Low
+              </option>
+
+              <option
+                value="medium"
+                selected
+              >
+                Medium
+              </option>
+
+              <option value="high">
+                High
+              </option>
+
+              <option value="urgent">
+                Urgent
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="taskDueAt">
+              Deadline
+            </label>
+
+            <input
+              type="datetime-local"
+              id="taskDueAt"
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="taskDescription">
+            Description
+          </label>
+
+          <textarea
+            id="taskDescription"
+            rows="4"
+          ></textarea>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="taskModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Task
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: NEGOTIATION UPDATE
+  ========================================================== -->
+
+  <div
+    id="negotiationModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal modal-large">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="eyebrow">
+            NEGOTIATION
+          </span>
+
+          <h3>
+            Update Negotiation
+          </h3>
+
+        </div>
+
+        <button
+          class="modal-close"
+          data-close-modal="negotiationModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="negotiationForm">
+
+        <input
+          type="hidden"
+          id="negotiationOpportunityId"
+        />
+
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label for="negotiationCash">
+              Cash Offer
+            </label>
+
+            <input
+              type="number"
+              id="negotiationCash"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="negotiationInKind">
+              Estimated In-Kind Value
+            </label>
+
+            <input
+              type="number"
+              id="negotiationInKind"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="partnerOffer">
+              Partner Offer
+            </label>
+
+            <textarea
+              id="partnerOffer"
+              rows="3"
+              placeholder="Rp3 juta + 120 pcs product"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="hmmOffer">
+              HMM Offer / Benefits
+            </label>
+
+            <textarea
+              id="hmmOffer"
+              rows="3"
+              placeholder="Logo, booth, IG stories..."
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="negotiationSummary">
+              What happened?
+            </label>
+
+            <textarea
+              id="negotiationSummary"
+              rows="4"
+              required
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-group checkbox-group">
+
+            <label>
+
+              <input
+                type="checkbox"
+                id="negotiationFinal"
+              />
+
+              Mark as final agreement
+
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="negotiationModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Revision
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: SUPPORT COMMITMENT
+  ========================================================== -->
+
+  <div
+    id="commitmentModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal modal-large">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="eyebrow">
+            COMMITMENT
+          </span>
+
+          <h3>
+            Add Partner Support
+          </h3>
+
+        </div>
+
+        <button
+          class="modal-close"
+          data-close-modal="commitmentModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="commitmentForm">
+
+        <input
+          type="hidden"
+          id="commitmentOpportunityId"
+        />
+
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label for="commitmentType">
+              Support Type *
+            </label>
+
+            <select
+              id="commitmentType"
+              required
+            >
+
+              <option value="cash">
+                Cash
+              </option>
+
+              <option value="product">
+                Product
+              </option>
+
+              <option value="service">
+                Service
+              </option>
+
+              <option value="facility">
+                Facility
+              </option>
+
+              <option value="discount">
+                Discount
+              </option>
+
+              <option value="media_exposure">
+                Media Exposure
+              </option>
+
+              <option value="mixed">
+                Mixed
+              </option>
+
+              <option value="other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="commitmentTarget">
+              Related Campaign Need
+            </label>
+
+            <select id="commitmentTarget">
+
+              <option value="">
+                No specific target
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="commitmentItem">
+              Item / Support
+            </label>
+
+            <input
+              type="text"
+              id="commitmentItem"
+              placeholder="Mineral Water, Cash Sponsorship..."
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="committedCash">
+              Committed Cash
+            </label>
+
+            <input
+              type="number"
+              id="committedCash"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="receivedCash">
+              Received Cash
+            </label>
+
+            <input
+              type="number"
+              id="receivedCash"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="estimatedValue">
+              Estimated Value
+            </label>
+
+            <input
+              type="number"
+              id="estimatedValue"
+              min="0"
+              step="1000"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="valuationBasis">
+              Valuation Basis
+            </label>
+
+            <input
+              type="text"
+              id="valuationBasis"
+              placeholder="Retail price / quotation..."
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="quantityCommitted">
+              Quantity Committed
+            </label>
+
+            <input
+              type="number"
+              id="quantityCommitted"
+              min="0"
+              step="0.01"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="quantityReceived">
+              Quantity Received
+            </label>
+
+            <input
+              type="number"
+              id="quantityReceived"
+              min="0"
+              step="0.01"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="commitmentUnit">
+              Unit
+            </label>
+
+            <input
+              type="text"
+              id="commitmentUnit"
+              placeholder="pcs, bottle, pax..."
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="commitmentStatus">
+              Status
+            </label>
+
+            <select id="commitmentStatus">
+
+              <option value="proposed">
+                Proposed
+              </option>
+
+              <option value="committed">
+                Committed
+              </option>
+
+              <option value="partially_received">
+                Partially Received
+              </option>
+
+              <option value="received">
+                Received
+              </option>
+
+              <option value="cancelled">
+                Cancelled
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="commitmentDeliveryDate">
+              Expected Delivery
+            </label>
+
+            <input
+              type="date"
+              id="commitmentDeliveryDate"
+            />
+
+          </div>
+
+
+          <div class="form-group span-2">
+
+            <label for="commitmentNotes">
+              Notes
+            </label>
+
+            <textarea
+              id="commitmentNotes"
+              rows="3"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="commitmentModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Commitment
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: MEDIA PUBLICATION
+  ========================================================== -->
+
+  <div
+    id="mediaPublicationModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <div>
+          <span class="eyebrow">
+            MEDIA PARTNER
+          </span>
+
+          <h3>
+            Add Publication
+          </h3>
+        </div>
+
+        <button
+          class="modal-close"
+          data-close-modal="mediaPublicationModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="mediaPublicationForm">
+
+        <div class="form-group">
+
+          <label for="mediaOpportunity">
+            Media Partner *
+          </label>
+
+          <select
+            id="mediaOpportunity"
+            required
+          ></select>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="mediaPlatform">
+              Platform
+            </label>
+
+            <select id="mediaPlatform">
+
+              <option value="instagram">
+                Instagram
+              </option>
+
+              <option value="tiktok">
+                TikTok
+              </option>
+
+              <option value="youtube">
+                YouTube
+              </option>
+
+              <option value="website">
+                Website
+              </option>
+
+              <option value="x">
+                X
+              </option>
+
+              <option value="linkedin">
+                LinkedIn
+              </option>
+
+              <option value="other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="mediaContentType">
+              Content Type
+            </label>
+
+            <select id="mediaContentType">
+
+              <option value="story">
+                Story
+              </option>
+
+              <option value="feed">
+                Feed
+              </option>
+
+              <option value="reels">
+                Reels
+              </option>
+
+              <option value="video">
+                Video
+              </option>
+
+              <option value="article">
+                Article
+              </option>
+
+              <option value="banner">
+                Banner
+              </option>
+
+              <option value="other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="mediaTitle">
+            Publication *
+          </label>
+
+          <input
+            type="text"
+            id="mediaTitle"
+            required
+            placeholder="Event Announcement H-7"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="mediaScheduledAt">
+            Scheduled At
+          </label>
+
+          <input
+            type="datetime-local"
+            id="mediaScheduledAt"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="mediaProofUrl">
+            Publication URL
+          </label>
+
+          <input
+            type="url"
+            id="mediaProofUrl"
+            placeholder="https://..."
+          />
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="mediaPublicationModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Publication
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: TARGET ADMIN
+  ========================================================== -->
+
+  <div
+    id="targetModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <div>
+          <span class="eyebrow">
+            ADMIN
+          </span>
+
+          <h3>
+            Campaign Target
+          </h3>
+        </div>
+
+        <button
+          class="modal-close"
+          data-close-modal="targetModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="targetForm">
+
+        <div class="form-group">
+
+          <label for="targetName">
+            Target Name *
+          </label>
+
+          <input
+            type="text"
+            id="targetName"
+            required
+            placeholder="Cash Sponsorship"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="targetType">
+            Target Type *
+          </label>
+
+          <select
+            id="targetType"
+            required
+          >
+
+            <option value="cash">
+              Cash
+            </option>
+
+            <option value="in_kind_value">
+              In-Kind Value
+            </option>
+
+            <option value="product_quantity">
+              Product Quantity
+            </option>
+
+            <option value="media_partner_count">
+              Media Partner Count
+            </option>
+
+            <option value="partner_count">
+              Partner Count
+            </option>
+
+            <option value="custom">
+              Custom
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="targetValue">
+              Target Value
+            </label>
+
+            <input
+              type="number"
+              id="targetValue"
+              min="0"
+              step="1000"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="targetQuantity">
+              Target Quantity
+            </label>
+
+            <input
+              type="number"
+              id="targetQuantity"
+              min="0"
+              step="0.01"
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="targetUnit">
+            Unit
+          </label>
+
+          <input
+            type="text"
+            id="targetUnit"
+            placeholder="IDR, bottle, account..."
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="targetDescription">
+            Description
+          </label>
+
+          <textarea
+            id="targetDescription"
+            rows="3"
+          ></textarea>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-close-modal="targetModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Target
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       MODAL: CAMPAIGN
+  ========================================================== -->
+
+  <div
+    id="campaignModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <div>
+          <span class="eyebrow">
+            ADMIN
+          </span>
+
+          <h3>
+            New Campaign
+          </h3>
+        </div>
+
+        <button
+          class="modal-close"
+          data-close-modal="campaignModal"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="campaignForm">
+
+        <div class="form-group">
+
+          <label for="campaignName">
+            Campaign Name *
+          </label>
+
+          <input
+            type="text"
+            id="campaignName"
+            required
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="campaignDescription">
+            Description
+          </label>
+
+          <textarea
+            id="campaignDescription"
+            rows="3"
+          ></textarea>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="campaignStartDate">
+              Start Date
+            </label>
+
+            <input
+              type="date"
+              id="campaignStartDate"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="campaignEndDate">
+              End Date
+            </label>
+
+            <input
+              type="date"
+              id="campaignEndDate"
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="campaignPartnershipDeadline">
+            Partnership Deadline
+          </label>
+
+          <input
+            type="date"
+            id="campaignPartnershipDeadline"
+          />
+
+        </div>
 
 
         <div class="modal-footer">
@@ -240,3 +4051,8 @@ index.html
 
 </body>
 </html>
+
+index.html
+HTML
+
+
