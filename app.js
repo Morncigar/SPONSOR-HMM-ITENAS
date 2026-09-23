@@ -14,6 +14,9 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_H4jRDxZdWg9hkDXbk9Sghg__ZeS5JzN";
 
+console.log("APP.JS LOADED");
+console.log("Supabase global:", window.supabase);
+
 
 /* ============================================================
    2. CREATE SUPABASE CLIENT
